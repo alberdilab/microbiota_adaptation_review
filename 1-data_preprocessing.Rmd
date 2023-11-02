@@ -1,0 +1,82 @@
+---
+title: "Microbiota adaptation review - 1. Preprocessing"
+author: "Garazi Martin Bideguren"
+date: "01-11-2023"
+output: pdf_document:
+    toc: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r load_libraries, include=FALSE}
+library(stringi)
+```
+
+# 1- Prepare data files
+
+```{r prepare_data_tables, include=FALSE}
+#Load raw data tables
+scp_raw <- read.csv("data/Scopus_230601.csv")
+wos_raw <- read.csv("data/WOS_230601.csv")
+
+#Filter columns
+scp <- scp_raw[,c("Title","Authors","Year","Document.Type","DOI","Abstract","Author.Keywords","Index.Keywords")]
+colnames(scp) <- c("Title","Authors","Year","Type","DOI","Abstract","Keywords1","Keywords2")
+wos <- wos_raw[,c("Article.Title","Authors","Publication.Year","Document.Type","DOI","Abstract","Author.Keywords","Keywords.Plus")]
+colnames(wos) <- c("Title","Authors","Year","Type","DOI","Abstract","Keywords1","Keywords2")
+
+#Unify formats
+scp[,2] <- gsub("\\.","",scp[,2])
+wos[,2] <- gsub(",","",wos[,2])
+wos[,2] <- gsub(";",",",wos[,2])
+
+#Merge datasets
+all <- rbind(scp,wos)
+
+#Merge keywords
+all$Keywords <- paste(all$Keywords1,all$Keywords2,sep="; ")
+
+#Merge text case
+all$Keywords <- stri_trans_tolower(all$Keywords)
+
+#Rename and order
+all <- all[,c("Title","Authors","Year","Type","DOI","Abstract","Keywords")]
+all <- all[order(all$Title),]
+```
+# 2- Filter duplicates
+
+```{r filter_duplicates, include=FALSE}
+#Filter by duplicated Title
+all.uniq <- all[!duplicated(all[,"Title"]),]
+
+#Filter by duplicated DOI
+all.uniq <- all.uniq[!duplicated(all.uniq[,"DOI"]),]
+
+#Filter by duplicated Abstract
+all.uniq <- all.uniq[!duplicated(all.uniq[,"Abstract"]),]
+```
+
+# 3- Filter document types
+
+```{r filter_document_type, include=FALSE}
+#Print all document types
+unique(all.uniq$Type)
+
+#Filter entries
+all.filt_type <- all.uniq[all.uniq$Type %in% c("Article","Letter","Article in Press","Note","Short Survey","Reprint"),]
+
+write.csv(all.filt_type, "data/all_20230601.csv", row.names=FALSE)
+```
+
+# 4- Get general statistics
+
+```{r get_stats, include=FALSE}
+#Raw
+nrow(all)
+#After duplicate removal
+nrow(all.uniq)
+#After manuscript type filtering
+nrow(all.filt_type)
+```
