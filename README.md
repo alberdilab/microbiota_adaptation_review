@@ -11,11 +11,11 @@ We conducted a literature search for articles published between 2016 and 2023 in
 > (wild*) AND (animal*) AND (adapt*) AND (“gut microbiota” OR “gut microbiome” OR “intestinal microbiota” OR “intestinal microbiome” OR “GUT microbiota” OR “GUT microbiome”)
 
 The resulting tables can be found in the data folder:
-- **Scopus:** [Scopus_20230601.csv](data/20230601.csv)
-- **Web of Science:** [WOS_20230601.csv](data/20230601.csv)
+- **Scopus:** [Scopus_20230601.csv](data/Scopus_20230601.csv)
+- **Web of Science:** [WOS_20230601.csv](data/WOS_20230601.csv)
 
 ## 2. Data preprocessing
-The search results were downloaded in tabular format, and subsequently merged and filtered to obtain the definitive list of 1974 publication that was used for downstream analyses. The code used for these preprocessing steps is available in **[code/1-data_preprocessing.Rmd](code/1-data_preprocessing.Rmd)**.
+The search results were downloaded in tabular format, and subsequently merged and filtered to obtain the definitive list of 1974 publication that was used for downstream analyses. The code used for these preprocessing steps is available in **[1-data_preprocessing.Rmd](1-data_preprocessing.Rmd)**.
 
 The resulting table containing the 1974 publications can be found in the data folder:
 - **All preprocessed data:** [all_20230601.csv](data/all_20230601.csv)
@@ -40,4 +40,4 @@ For each one of these 10 criteria, a quantitative value ranging 0-1 was assigned
 Each of the ten analysed criteria was given a different weight to obtain the overall performance scores for each publication through weighted average calculation. To minimise subjectivity, we requested 8 independent experts to assign relevance values to each of the ten criteria. The weighs provided by the experts are shown in [data/weights.tsv](data/weights.tsv).
 
 ## 6. Study analysis
-Using the above data files, we conducted the statistical analyses and visualisations that are compiled in the code file **[code/2-data_analysis.Rmd](code/2-data_analysis.Rmd)**, and generated the results and figures shown in the rendered markdown document **[microbiota_adaptation_review.pdf](microbiota_adaptation_review.pdf)**.
+Using the above data files, we conducted the statistical analyses and visualisations that are compiled in the code file **[2-data_analysis.Rmd](2-data_analysis.Rmd)**, and generated the results and figures shown in the rendered markdown document **[microbiota_adaptation_review.pdf](microbiota_adaptation_review.pdf)**.

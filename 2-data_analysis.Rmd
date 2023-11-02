@@ -54,7 +54,7 @@ weight_consensus_methods <- weight_consensus[methods]/sum(weight_consensus[metho
 scores <- scores %>%
   mutate(total_design = rowSums(across(all_of(design), ~ . * weight_consensus_design[[(cur_column())]]))) %>%
   mutate(total_methods = rowSums(across(all_of(methods), ~ . * weight_consensus_methods[[(cur_column())]]))) %>%
-  mutate(total_reproducibility = Data.availability) %>%
+  mutate(total_reproducibility = rowSums(across(all_of(reproducibility), ~ . * weight_consensus_methods[[(cur_column())]]))) %>%
   mutate(total = rowSums(across(all_of(criteria), ~ . * weight_consensus[[(cur_column())]])))
 ```
 
