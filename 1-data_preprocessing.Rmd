@@ -1,9 +1,10 @@
 ---
 title: "Microbiota adaptation review - 1. Preprocessing"
-author: "Garazi Martin Bideguren"
+author:
+  - Garazi Martin Bideguren, garazi.bideguren@sund.ku.dk
+  - Antton Alberdi, antton.alberdi@sund.ku.dk
 date: "01-11-2023"
-output: pdf_document:
-    toc: true
+output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
