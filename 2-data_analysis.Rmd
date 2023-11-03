@@ -15,9 +15,7 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# Review information
-
-## Data preparation
+# Data preparation
 
 ```{r load_libraries, echo=TRUE, message=FALSE, results=FALSE }
 library(knitr)
@@ -46,7 +44,7 @@ weights <- read.csv("data/weights.csv",header=T,row.names=1) %>%
    mutate(average=mean(c_across(everything()))) #calculate average weight
 ```
 
-## Overall performance score computations
+# Performance score statistics
 Compute total performance scores given the vector of average criterion weights.
 
 ```{r overall_scores}
@@ -84,7 +82,7 @@ scores %>%
   theme_classic()
 ```
 
-#### Total scores distribution in each continent (CONTINENT DATA ARE MISSING!)
+# Performance scores per continent (CONTINENT DATA ARE MISSING!)
 ```{r boxplot_continent, eval=FALSE}
 scores %>%
   mutate(Year = factor(Year)) %>%
@@ -106,7 +104,7 @@ scores %>%
   coord_flip()
 ```
 
-#### Performance scores per animal taxa
+# Performance scores per animal taxa
 
 ```{r separate_taxa, echo=TRUE}
 scores_taxa <- scores %>%
@@ -119,7 +117,7 @@ scores_taxa <- scores %>%
   mutate(Taxa = factor(Taxa, levels = c("Mammals","Birds","Reptiles","Amphibians","Fish")))
 ```
 
-#### Statistical model
+### Statistical model
 
 ```{r total_performance_taxa_model, echo=TRUE}
 
@@ -138,7 +136,7 @@ dunn <- scores_taxa %>%
 kable(dunn$res)
 ```
 
-#### Visualisation (Fig. 2c)
+### Visualisation (Fig. 2c)
 
 ```{r boxplot_class, echo=TRUE, warning=FALSE}
 scores_taxa %>%
@@ -158,7 +156,7 @@ scores_taxa %>%
   theme(legend.position = "none")
 ```
 
-#### Visualisation (Fig. Sx)
+### Visualisation (Fig. Sx)
 
 ```{r performance_domains_taxa_plot, echo=TRUE}
 
@@ -217,12 +215,11 @@ total_reproducibility_taxa_plot <- scores_taxa %>%
 grid.arrange(grobs = list(total_design_taxa_plot,total_methods_taxa_plot,total_reproducibility_taxa_plot), layout_matrix = matrix(1:3, nrow = 1))
 ```
 
-
-### Temporal trend of total performance scores
+# Performance scores across years
 
 Linear regression model between the performance score and the publication year.
 
-#### Statistical model
+### Statistical model
 
 ```{r total_performance_year_model, echo=TRUE}
 total_performance_year_model <- lm(total ~ Year, data = scores) %>% summary()
@@ -232,7 +229,7 @@ total_performance_year_model_table <- total_performance_year_model$coefficients[
 kable(total_performance_year_model_table)
 ```
 
-#### Visualisation (Fig. 2b)
+### Visualisation (Fig. 2b)
 Linear regression between the performance score and the publication year.
 
 ```{r total_performance_year_plot, echo=TRUE}
@@ -246,11 +243,11 @@ scores %>%
   labs(y = "Total performance", x = "Year")
 ```
 
-### Temporal trend of performance domains
+## Temporal trend of performance domains
 
 Linear regression between the performance domain scores and the publication year.
 
-#### Statistical model
+### Statistical model
 
 ```{r performance_domains_year_models, echo=TRUE}
 # Experimental design
@@ -274,7 +271,7 @@ rownames(performance_domains_year_models_table) <- c("Experimental design","Meth
 kable(performance_domains_year_models_table)
 ```
 
-#### Visualisation (Fig. 2a)
+### Visualisation (Fig. 2a)
 Total performance scores of each study with the relative contribution of each domain indicated by a different colour.
 
 ```{r stack_barplot, echo=TRUE}
@@ -298,7 +295,7 @@ scores %>%
       theme(legend.position = "none")
 ```
 
-#### Visualisation (Fig. Sx)
+### Visualisation (Fig. Sx)
 
 ```{r performance_domains_year_plot, echo=TRUE}
 # Experimental design
@@ -335,10 +332,9 @@ total_reproducibility_year_plot <- scores %>%
 grid.arrange(grobs = list(total_design_year_plot,total_methods_year_plot,total_reproducibility_year_plot), layout_matrix = matrix(1:3, nrow = 1))
 ```
 
-### Comparison between performance and conclusiveness level
+# Performance scores vs. conclusiveness level
 
-
-#### Conclusiveness scores distribution (Fig. 2d)
+### Conclusiveness scores distribution (Fig. 2d)
 
 ```{r adaptation_means, echo=TRUE}
 scores %>%
@@ -355,7 +351,7 @@ scores %>%
     theme(legend.position = "none")
 ```
 
-#### Statistical model
+### Statistical model
 
 ```{r total_performance_conclusiveness_model, echo=TRUE}
 total_performance_conclusiveness_model <- lm(total ~ Conclusiveness, data = scores) %>% summary()
@@ -365,7 +361,7 @@ total_performance_conclusiveness_model_table <- total_performance_conclusiveness
 kable(total_performance_conclusiveness_model_table)
 ```
 
-#### Visualisation (Fig. 2d)
+### Visualisation (Fig. 2d)
 
 ```{r total_performance_conclusiveness_plot, echo=TRUE}
 scores %>%
