@@ -3,7 +3,7 @@ title: "Microbiota adaptation review - 1. Preprocessing"
 author:
   - Garazi Martin Bideguren, garazi.bideguren@sund.ku.dk
   - Antton Alberdi, antton.alberdi@sund.ku.dk
-date: "01-11-2023"
+date: "07-11-2023"
 output: pdf_document
 ---
 
@@ -16,18 +16,21 @@ library(stringi)
 ```
 
 # 1- Prepare data files
+Download the files from Scopus and Web of Science websites and remember to save them in csv format.
 
 ```{r prepare_data_tables, include=FALSE}
 #Load raw data tables
 scp_raw <- read.csv("data/Scopus_230601.csv")
 wos_raw <- read.csv("data/WOS_230601.csv")
 
+Note that as each website uses different colmn names to address keywords or other information, to be able to compile all the studies in one single file, some transformations are needed. Also, we will only retain the columns we are interested in Title, Authors,Year,Document Type,DOI and Abstract.
 #Filter columns
 scp <- scp_raw[,c("Title","Authors","Year","Document.Type","DOI","Abstract","Author.Keywords","Index.Keywords")]
 colnames(scp) <- c("Title","Authors","Year","Type","DOI","Abstract","Keywords1","Keywords2")
 wos <- wos_raw[,c("Article.Title","Authors","Publication.Year","Document.Type","DOI","Abstract","Author.Keywords","Keywords.Plus")]
 colnames(wos) <- c("Title","Authors","Year","Type","DOI","Abstract","Keywords1","Keywords2")
 
+The use of grammatical signs needs to be unified.
 #Unify formats
 scp[,2] <- gsub("\\.","",scp[,2])
 wos[,2] <- gsub(",","",wos[,2])
@@ -36,17 +39,21 @@ wos[,2] <- gsub(";",",",wos[,2])
 #Merge datasets
 all <- rbind(scp,wos)
 
+Only one column of keywords will be present in the file, merging both columns of keywords into one.
 #Merge keywords
 all$Keywords <- paste(all$Keywords1,all$Keywords2,sep="; ")
 
+As the keywords are comming from different databases we will transform them to have the same format and avoid having different text cases.
 #Merge text case
 all$Keywords <- stri_trans_tolower(all$Keywords)
 
+Rename the columns of the final dataset and order them in the desired way.
 #Rename and order
 all <- all[,c("Title","Authors","Year","Type","DOI","Abstract","Keywords")]
 all <- all[order(all$Title),]
 ```
 # 2- Filter duplicates
+Some studies will appear in both Scopus and Web of Science, we will remove the duplicated ones using Title, DOI and Abstract as unique values.
 
 ```{r filter_duplicates, include=FALSE}
 #Filter by duplicated Title
@@ -60,6 +67,7 @@ all.uniq <- all.uniq[!duplicated(all.uniq[,"Abstract"]),]
 ```
 
 # 3- Filter document types
+We are only interested in original research articles so any review, book, meta-analysis or similar work will be discarded.
 
 ```{r filter_document_type, include=FALSE}
 #Print all document types
@@ -72,6 +80,7 @@ write.csv(all.filt_type, "data/all_20230601.csv", row.names=FALSE)
 ```
 
 # 4- Get general statistics
+Finally, we will get some statistics to have an overview of the data.
 
 ```{r get_stats, include=FALSE}
 #Raw

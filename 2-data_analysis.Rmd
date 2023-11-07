@@ -3,18 +3,17 @@ title: "Microbiota adaptation review - 2. Analysis"
 author:
 - Garazi Martin Bideguren, garazi.bideguren@sund.ku.dk
 - Antton Alberdi, antton.alberdi@sund.ku.dk
-date: "01-11-2023"
+date: "07-11-2023"
 output:
   pdf_document:
     toc: yes
-  word_document:
-    toc: yes
+    toc_depth: 1
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
-
+\newpage
 # Data preparation
 
 ```{r load_libraries, echo=TRUE, message=FALSE, results=FALSE }
@@ -28,17 +27,20 @@ library(vegan)
 library(FSA)
 ```
 
+Prepare the main dataset were all the analysed studies will have their obtained scores for each of the criteria. Subsample the dataset in 4 dataframes: 1)Select the columns corresponding to the 10 analysed criteria, 2)Select the columns corresponding to the experimental design, 3)Select the columns corresponding to the methodological resolution and 4) Select the columns corresponding to the reproducibility.
+Finally, prepare the file with the weigthed values for each of the analysed criteria.
+
 ```{r load_data}
+# Dataset
 scores <- read.csv("data/scores.csv",header=T)
 
 # Groups of criteria
-criteria <- colnames(scores)[c(4:13)]
-design <- colnames(scores)[c(4:7)]
-methods <- colnames(scores)[c(8:12)]
-reproducibility <- colnames(scores)[13]
+criteria <- colnames(scores)[c(5:14)]
+design <- colnames(scores)[c(5:8)]
+methods <- colnames(scores)[c(9:13)]
+reproducibility <- colnames(scores)[14]
 
-
-# Weights
+# Criteria weights
 weights <- read.csv("data/weights.csv",header=T,row.names=1) %>%
    rowwise() %>%
    mutate(average=mean(c_across(everything()))) #calculate average weight
@@ -48,60 +50,107 @@ weights <- read.csv("data/weights.csv",header=T,row.names=1) %>%
 Compute total performance scores given the vector of average criterion weights.
 
 ```{r overall_scores}
-# Generate weight vectors
+# Generate vectors of weights
 weight_consensus <- weights$average
 names(weight_consensus) <- criteria
-weight_consensus_design <- weight_consensus[design]/sum(weight_consensus[design]) # weighed criteria only for design
-weight_consensus_methods <- weight_consensus[methods]/sum(weight_consensus[methods]) # weighed criteria only for methods
-weight_consensus_reproducibility <- weight_consensus[reproducibility]/sum(weight_consensus[reproducibility]) # weighed criteria only for methods
+# Weighed criteria only for design
+weight_consensus_design <-
+    weight_consensus[design]/sum(weight_consensus[design])
+# Weighed criteria only for methods
+weight_consensus_methods <-
+    weight_consensus[methods]/sum(weight_consensus[methods])
+# Weighed criteria only for reproducibility
+weight_consensus_reproducibility <-
+    weight_consensus[reproducibility]/sum(weight_consensus[reproducibility])
 
-# Calculate weighed averages
+# Calculate weighed domain-specific and overall performance scores
 scores <- scores %>%
-  mutate(total_design = rowSums(across(all_of(design), ~ . * weight_consensus_design[[(cur_column())]]))) %>%
-  mutate(total_methods = rowSums(across(all_of(methods), ~ . * weight_consensus_methods[[(cur_column())]]))) %>%
-  mutate(total_reproducibility = rowSums(across(all_of(reproducibility), ~ . * weight_consensus_reproducibility[[(cur_column())]]))) %>%
-  mutate(total = rowSums(across(all_of(criteria), ~ . * weight_consensus[[(cur_column())]])))
+  # Total score for design
+  mutate(total_design = rowSums(across(all_of(design),
+        ~ . * weight_consensus_design[[(cur_column())]]))) %>%
+  # Total score for methods
+  mutate(total_methods = rowSums(across(all_of(methods),
+        ~ . * weight_consensus_methods[[(cur_column())]]))) %>%
+  # Total score for reproducibility
+  mutate(total_reproducibility = rowSums(across(all_of(reproducibility),
+        ~ . * weight_consensus_reproducibility[[(cur_column())]]))) %>%
+  #Overall total score
+  mutate(total = rowSums(across(all_of(criteria),
+        ~ . * weight_consensus[[(cur_column())]])))
 ```
 
 ## Overall visual statistics
-#### Studies per total score
-Distribution of total scores of the 109 papers analysed
-```{r histogram_score, echo=TRUE}
-scores %>%
+```{r histograms, echo=TRUE, fig.height=3}
+# Distribution of total scores of the 109 papers analysed
+score <- scores %>%
   ggplot(aes(x=total)) +
   geom_histogram(binwidth = 0.05,) +
   theme_classic()
-```
 
-#### Studies per year
-The 109 papers analysed distributed per year
-```{r histogram_year, echo=TRUE}
-scores %>%
+# The 109 papers analysed distributed per year
+year <- scores %>%
   ggplot(aes(x=Year)) +
   geom_histogram(binwidth = 1) +
   theme_classic()
+
+  #Composite plot
+  grid.arrange(grobs = list(score,year),
+        layout_matrix = matrix(1:2, nrow = 1))
 ```
 
-# Performance scores per continent (CONTINENT DATA ARE MISSING!)
-```{r boxplot_continent, eval=FALSE}
+# Performance scores per continent
+
+```{r separate_continent, echo=TRUE}
+scores_continent <- scores %>%
+  separate_rows(Continent, sep = ", ")
+```
+### Visualisation (Fig. S2)
+
+```{r boxplot_continent}
 scores %>%
   mutate(Year = factor(Year)) %>%
   separate_rows(Continent, sep = ", ") %>%
-  ggplot(aes(x = Continent, y = Total, fill = Continent)) +
-  geom_violin() +
+  ggplot(aes(x = Continent, y = total, fill = Continent)) +
+  geom_violin(color = NA) +
   geom_point(stat = "summary", fun = "median", shape=8, color = "black", size = 3) +
   geom_jitter(
     width = 0.15,
     height = 0,
     alpha = 0.5,
     size = 1.5) +
-  scale_fill_manual(values = c("#E69F00", "#AA3377", "#228833", "#66CCEE", "#CCBB44", "#EE6677", "#4477AA")) +
-  scale_colour_manual(values = c("#E69F00", "#AA3377", "#228833", "#66CCEE", "#CCBB44", "#EE6677", "#4477AA"))+
+  scale_fill_manual(values = c("#E69F0050", "#AA337750", "#22883350",
+        "#66CCEE50", "#CCBB4450", "#EE667750", "#4477AA50")) +
+  scale_colour_manual(values = c("#E69F00", "#AA3377", "#228833",
+        "#66CCEE", "#CCBB44", "#EE6677", "#4477AA"))+
   theme_classic() +
   labs(title = "Total Score Distributions by Continent",
        y = "Total Score",
        x = "Continent") +
-  coord_flip()
+  coord_flip() +
+  theme(legend.position = "none")
+```
+
+### Statistical model (Table S2)
+Perform a Kruskal-Wallis test to check if there are differences between the total scores obtained and the continents. Also, as an extra step, check if there are any specific pairs of continents that differ significantly from each other, running the Dunn test. Render both analysis into tables to better inspect them.
+
+```{r total_performance_continent_model, echo=TRUE, warning=FALSE, comments="", message=FALSE}
+
+# Kruskal-Wallis test
+kruskal <- scores_continent %>%
+  kruskal.test(total ~ Continent, .)
+
+# Render results
+c(kruskal$statistic,kruskal$parameter,pvalue=kruskal$p.value) %>%
+      round(4) %>%
+      kable()
+
+# Dunn test for multiple comparisons
+dunn <- scores_continent %>%
+  mutate(Continent = factor(Continent)) %>%
+  dunnTest(total ~ Continent, data=., method="bh")
+
+# Render results
+dunn$res %>% kable()
 ```
 
 # Performance scores per animal taxa
@@ -113,32 +162,15 @@ scores_taxa <- scores %>%
   mutate(Taxa = ifelse(Taxa == "Aves", "Birds", Taxa)) %>%
   mutate(Taxa = ifelse(Taxa == "Reptilia", "Reptiles", Taxa)) %>%
   mutate(Taxa = ifelse(Taxa == "Amphibia", "Amphibians", Taxa)) %>%
-  mutate(Taxa = ifelse(Taxa == "Dipnoi", "Fish", ifelse(Taxa == "Actinopterygii", "Fish", Taxa))) %>%
-  mutate(Taxa = factor(Taxa, levels = c("Mammals","Birds","Reptiles","Amphibians","Fish")))
-```
-
-### Statistical model
-
-```{r total_performance_taxa_model, echo=TRUE}
-
-# Kruskal-Wallis test
-kruskal <- scores_taxa %>%
-  kruskal.test(total ~ Taxa, .)
-
-# Render results
-kable(c(kruskal$statistic,kruskal$parameter,pvalue=kruskal$p.value))
-
-# Dunn test for multiple comparisons
-dunn <- scores_taxa %>%
-  dunnTest(total ~ Taxa, data=., method="bh")
-
-# Render results
-kable(dunn$res)
+  mutate(Taxa = ifelse(Taxa == "Dipnoi", "Fish",
+      ifelse(Taxa == "Actinopterygii", "Fish", Taxa))) %>%
+  mutate(Taxa = factor(Taxa,
+      levels = c("Mammals","Birds","Reptiles","Amphibians","Fish")))
 ```
 
 ### Visualisation (Fig. 2c)
 
-```{r boxplot_class, echo=TRUE, warning=FALSE}
+```{r boxplot_class, echo=TRUE, warning=FALSE, comments="", message=FALSE}
 scores_taxa %>%
   ggplot(aes(x = Taxa, y = total, fill = Taxa)) +
   geom_violin(color = NA) +
@@ -148,15 +180,41 @@ scores_taxa %>%
     height = 0,
     alpha = 0.5,
     size = 1.5) +
-  scale_fill_manual(values = c("#AB67AA50", "#C66E6A50", "#CCC26A50", "#8FC96750", "#68C8C650")) +
-  scale_colour_manual(values = c("#AB67AA", "#C66E6A", "#CCC26A", "#8FC967", "#68C8C6"))+
+  scale_fill_manual(values = c("#AB67AA50", "#C66E6A50", "#CCC26A50",
+      "#8FC96750", "#68C8C650")) +
+  scale_colour_manual(values = c("#AB67AA", "#C66E6A", "#CCC26A",
+      "#8FC967", "#68C8C6"))+
   theme_classic() +
   labs(y = "Performance Score") +
   coord_flip() +
   theme(legend.position = "none")
 ```
 
-### Visualisation (Fig. Sx)
+
+### Statistical model (Table S2)
+Perform a Kruskal-Wallis test to check if there are differences between the total scores obtained and the animal taxas. Also, as an extra step, check if there are any specific pairs of taxas that differ significantly from each other, running the Dunn test. Render both analysis into tables to better inspect them.
+
+```{r total_performance_taxa_model, echo=TRUE}
+
+# Kruskal-Wallis test
+kruskal <- scores_taxa %>%
+  kruskal.test(total ~ Taxa, .)
+
+# Render results
+c(kruskal$statistic,kruskal$parameter,pvalue=kruskal$p.value) %>%
+  round(4) %>%
+  kable()
+
+# Dunn test for multiple comparisons
+dunn <- scores_taxa %>%
+  dunnTest(total ~ Taxa, data=., method="bh")
+
+# Render results
+dunn$res %>% kable()
+```
+
+
+### Visualisation (Fig. S2) **Were do we place this in the paper??**
 
 ```{r performance_domains_taxa_plot, echo=TRUE}
 
@@ -170,8 +228,10 @@ total_design_taxa_plot <- scores_taxa %>%
     height = 0,
     alpha = 0.5,
     size = 1.5) +
-  scale_fill_manual(values = c("#AB67AA50", "#C66E6A50", "#CCC26A50", "#8FC96750", "#68C8C650")) +
-  scale_colour_manual(values = c("#AB67AA", "#C66E6A", "#CCC26A", "#8FC967", "#68C8C6"))+
+  scale_fill_manual(values = c("#AB67AA50", "#C66E6A50", "#CCC26A50",
+        "#8FC96750", "#68C8C650")) +
+  scale_colour_manual(values = c("#AB67AA", "#C66E6A", "#CCC26A",
+        "#8FC967", "#68C8C6"))+
   theme_classic() +
   labs(y = "Experimental design") +
   coord_flip() +
@@ -187,8 +247,10 @@ total_methods_taxa_plot <- scores_taxa %>%
     height = 0,
     alpha = 0.5,
     size = 1.5) +
-  scale_fill_manual(values = c("#AB67AA50", "#C66E6A50", "#CCC26A50", "#8FC96750", "#68C8C650")) +
-  scale_colour_manual(values = c("#AB67AA", "#C66E6A", "#CCC26A", "#8FC967", "#68C8C6"))+
+  scale_fill_manual(values = c("#AB67AA50", "#C66E6A50", "#CCC26A50",
+        "#8FC96750", "#68C8C650")) +
+  scale_colour_manual(values = c("#AB67AA", "#C66E6A", "#CCC26A",
+        "#8FC967", "#68C8C6"))+
   theme_classic() +
   labs(y = "Methodological resolution") +
   coord_flip() +
@@ -204,35 +266,42 @@ total_reproducibility_taxa_plot <- scores_taxa %>%
     height = 0,
     alpha = 0.5,
     size = 1.5) +
-  scale_fill_manual(values = c("#AB67AA50", "#C66E6A50", "#CCC26A50", "#8FC96750", "#68C8C650")) +
-  scale_colour_manual(values = c("#AB67AA", "#C66E6A", "#CCC26A", "#8FC967", "#68C8C6"))+
+  scale_fill_manual(values = c("#AB67AA50", "#C66E6A50", "#CCC26A50",
+        "#8FC96750", "#68C8C650")) +
+  scale_colour_manual(values = c("#AB67AA", "#C66E6A", "#CCC26A",
+        "#8FC967", "#68C8C6"))+
   theme_classic() +
   labs(y = "Reproducibility") +
   coord_flip() +
   theme(legend.position = "none", axis.title.y = element_blank())
 
 #Composite plot
-grid.arrange(grobs = list(total_design_taxa_plot,total_methods_taxa_plot,total_reproducibility_taxa_plot), layout_matrix = matrix(1:3, nrow = 1))
+grid.arrange(grobs = list(
+        total_design_taxa_plot,
+        total_methods_taxa_plot,
+        total_reproducibility_taxa_plot),
+        layout_matrix = matrix(1:3, nrow = 1))
 ```
 
 # Performance scores across years
 
 Linear regression model between the performance score and the publication year.
 
-### Statistical model
+### Statistical model (Table S1)
 
 ```{r total_performance_year_model, echo=TRUE}
 total_performance_year_model <- lm(total ~ Year, data = scores) %>% summary()
-total_performance_year_model_table <- total_performance_year_model$coefficients[2,c(1,3,4)] %>% round(.,4)
+total_performance_year_model_table <-
+      total_performance_year_model$coefficients[2,c(1,3,4)]
 
 # Render table
-kable(total_performance_year_model_table)
+total_performance_year_model_table %>% round(4) %>% kable()
+
 ```
 
 ### Visualisation (Fig. 2b)
-Linear regression between the performance score and the publication year.
 
-```{r total_performance_year_plot, echo=TRUE}
+```{r total_performance_year_plot, echo=TRUE, }
 scores %>%
   mutate(Year = as.numeric(Year)) %>%
   ggplot(aes(x=Year,y=total)) +
@@ -247,28 +316,32 @@ scores %>%
 
 Linear regression between the performance domain scores and the publication year.
 
-### Statistical model
+### Statistical model (Table S1)
 
 ```{r performance_domains_year_models, echo=TRUE}
 # Experimental design
-total_design_year_model <- lm(total_design ~ Year, data = scores) %>% summary()
+total_design_year_model <-
+      lm(total_design ~ Year, data = scores) %>% summary()
 
 # Methodological resolution
-total_methods_year_model <- lm(total_methods ~ Year, data = scores) %>% summary()
+total_methods_year_model <-
+      lm(total_methods ~ Year, data = scores) %>% summary()
 
 # Reproducibility
-total_reproducibility_year_model <- lm(total_reproducibility ~ Year, data = scores) %>% summary()
+total_reproducibility_year_model <-
+      lm(total_reproducibility ~ Year, data = scores) %>% summary()
 
-# Composite resukt table
+# Composite result table
 performance_domains_year_models_table<- rbind(
       total_design_year_model$coefficients[2,c(1,3,4)],
       total_methods_year_model$coefficients[2,c(1,3,4)],
       total_reproducibility_year_model$coefficients[2,c(1,3,4)]
-    )  %>% round(.,4)
-rownames(performance_domains_year_models_table) <- c("Experimental design","Methodological resolution","Reproducibility")
+    )
+rownames(performance_domains_year_models_table) <-
+      c("Experimental design","Methodological resolution","Reproducibility")
 
 # Render table
-kable(performance_domains_year_models_table)
+performance_domains_year_models_table %>% round(4) %>% kable()
 ```
 
 ### Visualisation (Fig. 2a)
@@ -276,11 +349,16 @@ Total performance scores of each study with the relative contribution of each do
 
 ```{r stack_barplot, echo=TRUE}
 scores %>%
-  mutate(design = rowSums(across(all_of(design), ~ . * weight_consensus[[(cur_column())]]))) %>%
-  mutate(methods = rowSums(across(all_of(methods), ~ . * weight_consensus[[(cur_column())]]))) %>%
-  mutate(reproducibility = rowSums(across(all_of(reproducibility), ~ . * weight_consensus[[(cur_column())]]))) %>%
+  mutate(design = rowSums(across(all_of(design),
+        ~ . * weight_consensus[[(cur_column())]]))) %>%
+  mutate(methods = rowSums(across(all_of(methods),
+        ~ . * weight_consensus[[(cur_column())]]))) %>%
+  mutate(reproducibility = rowSums(across(all_of(reproducibility),
+        ~ . * weight_consensus[[(cur_column())]]))) %>%
   select(DOI, Year, design, methods, reproducibility) %>%
-  pivot_longer(cols = c(design, methods, reproducibility), names_to = "Category", values_to = "Score") %>%
+  pivot_longer(cols = c(design, methods, reproducibility),
+        names_to = "Category",
+        values_to = "Score") %>%
   mutate(DOI = factor(DOI, levels = unique(DOI))) %>%
   mutate(Year = factor(Year, levels = sort(unique(Year)))) %>%
   ggplot(., aes(x = DOI, y = Score, fill = Category)) +
@@ -291,13 +369,17 @@ scores %>%
       theme_minimal() +
       facet_grid(~ Year, scales = "free", space = "free")+
       theme(axis.text.x = element_blank(),axis.ticks.x=element_blank())+
-      scale_fill_manual(values = c("design" = "#C1DDE0", "methods" = "#C0AF9D", "reproducibility" = "#7A564A")) +
+      scale_fill_manual(values = c(
+            "design" = "#C1DDE0",
+            "methods" = "#C0AF9D",
+            "reproducibility" = "#7A564A")) +
       theme(legend.position = "none")
 ```
 
-### Visualisation (Fig. Sx)
+### Visualisation (Fig. S3)
+Plot the three linear regressions of the domains against the overall performance of the studies.
 
-```{r performance_domains_year_plot, echo=TRUE}
+```{r performance_domains_year_plot, echo=TRUE, warning=FALSE, comments="", message=FALSE}
 # Experimental design
 total_design_year_plot <- scores %>%
   mutate(Year = as.numeric(Year)) %>%
@@ -329,41 +411,53 @@ total_reproducibility_year_plot <- scores %>%
   labs(y = "Reproducibility", x = "Year")
 
 #Composite plot
-grid.arrange(grobs = list(total_design_year_plot,total_methods_year_plot,total_reproducibility_year_plot), layout_matrix = matrix(1:3, nrow = 1))
+grid.arrange(grobs = list(
+      total_design_year_plot,
+      total_methods_year_plot,
+      total_reproducibility_year_plot),
+      layout_matrix = matrix(1:3, nrow = 1))
 ```
 
 # Performance scores vs. conclusiveness level
 
 ### Conclusiveness scores distribution (Fig. 2d)
+Distribution of the papers depending on the conclusiveness level, that is, the interpretation of the results obtained from their results in regards of adaptation microbe-driven adaptation, split between studies that explicitly addressed the increased adaptability provided by microbiomes and those that did not.
 
-```{r adaptation_means, echo=TRUE}
+```{r adaptation_means, echo=TRUE, fig.height=3}
 scores %>%
   select(DOI,Adaptation.means,Conclusiveness) %>%
   mutate(Conclusiveness = factor(Conclusiveness, levels = c(0,1,2,3,4))) %>%
   mutate(Adaptation.means = factor(Adaptation.means)) %>%
-  #pivot_longer(cols = c(Adaptation.means,Conclusiveness), names_to = "Category", values_to = "Score") %>%
   ggplot(., aes(x = Adaptation.means, fill=Conclusiveness)) +
     geom_bar(position='stack', stat='count') +
-    labs(x = "Adaptation Aas hypothesis?", y = "Number of papers") +
+    labs(x = "Adaptation as hypothesis?", y = "Number of papers") +
     scale_fill_manual(values = c("#6A697C", "#758A9B", "#C1DDE0", "#FFD367", "#F6A438")) +
     coord_flip() +
     theme_minimal() +
-    theme(legend.position = "none")
+    theme(legend.position = "botton")
 ```
+
+0. Adaptation only mentioned in the discussion
+1. Results not interpreted in an adaptation framework
+2. Results interpreted in an adaptation framework
+3. Results interpreted as evidence for potential adaptation
+4. Results interpreted as evidence for adaptation
 
 ### Statistical model
 
 ```{r total_performance_conclusiveness_model, echo=TRUE}
-total_performance_conclusiveness_model <- lm(total ~ Conclusiveness, data = scores) %>% summary()
-total_performance_conclusiveness_model_table <- total_performance_conclusiveness_model$coefficients[2,c(1,3,4)] %>% round(.,4)
+total_performance_conclusiveness_model <-
+        lm(total ~ Conclusiveness, data = scores) %>% summary()
+total_performance_conclusiveness_model_table <-
+        total_performance_conclusiveness_model$coefficients[2,c(1,3,4)]
 
 # Render table
-kable(total_performance_conclusiveness_model_table)
+total_performance_conclusiveness_model_table %>% round(4) %>% kable()
 ```
 
-### Visualisation (Fig. 2d)
+### Visualisation (Fig. 2e)
 
-```{r total_performance_conclusiveness_plot, echo=TRUE}
+```{r total_performance_conclusiveness_plot, echo=TRUE, warning=FALSE, comments="", message=FALSE}
 scores %>%
   mutate(Conclusiveness = as.numeric(Conclusiveness)) %>%
   ggplot(aes(x=Conclusiveness,y=total)) +
@@ -371,5 +465,5 @@ scores %>%
   ylim(0,1) +
   geom_smooth(method=lm, colour="#7A564A", fill = "#C1DDE040") +
   theme_classic() +
-  labs(y = "Reproducibility", x = "Conclusiveness")
+  labs(y = "Performance score", x = "Conclusiveness")
 ```
