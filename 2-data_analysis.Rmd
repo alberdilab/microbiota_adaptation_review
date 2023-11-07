@@ -85,7 +85,13 @@ scores %>%
   theme_classic()
 ```
 
-# Performance scores per continent
+# Performance scores per continent (Fig. S2)
+
+```{r separate_continent, echo=TRUE}
+scores_continent <- scores %>%
+  separate_rows(Continent, sep = ", ") 
+```
+
 ```{r boxplot_continent, eval=FALSE}
 scores %>%
   mutate(Year = factor(Year)) %>%
@@ -180,7 +186,7 @@ kable(dunn$res)
 ```
 
 
-### Visualisation (Fig. S2)
+### Visualisation (Fig. S2) **Were do we place this in the paper??**
 
 ```{r performance_domains_taxa_plot, echo=TRUE}
 
@@ -375,7 +381,7 @@ scores %>%
     theme(legend.position = "none")
 ```
 
-### Statistical model
+### Statistical model 
 
 ```{r total_performance_conclusiveness_model, echo=TRUE}
 total_performance_conclusiveness_model <- lm(total ~ Conclusiveness, data = scores) %>% summary()
@@ -385,7 +391,7 @@ total_performance_conclusiveness_model_table <- total_performance_conclusiveness
 kable(total_performance_conclusiveness_model_table)
 ```
 
-### Visualisation (Fig. 2d)
+### Visualisation (Fig. 2e)
 
 ```{r total_performance_conclusiveness_plot, echo=TRUE}
 scores %>%
