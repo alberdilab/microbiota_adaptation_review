@@ -374,7 +374,7 @@ scores %>%
   #pivot_longer(cols = c(Adaptation.means,Conclusiveness), names_to = "Category", values_to = "Score") %>%
   ggplot(., aes(x = Adaptation.means, fill=Conclusiveness)) +
     geom_bar(position='stack', stat='count') +
-    labs(x = "Adaptation Aas hypothesis?", y = "Number of papers") +
+    labs(x = "Adaptation as hypothesis?", y = "Number of papers") +
     scale_fill_manual(values = c("#6A697C", "#758A9B", "#C1DDE0", "#FFD367", "#F6A438")) +
     coord_flip() +
     theme_minimal() +
