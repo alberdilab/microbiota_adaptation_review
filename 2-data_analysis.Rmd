@@ -434,7 +434,7 @@ scores %>%
     scale_fill_manual(values = c("#6A697C", "#758A9B", "#C1DDE0", "#FFD367", "#F6A438")) +
     coord_flip() +
     theme_minimal() +
-    theme(legend.position = "botton")
+    theme(legend.position = "bottom")
 ```
 
 0. Adaptation only mentioned in the discussion
