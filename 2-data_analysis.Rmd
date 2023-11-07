@@ -60,10 +60,10 @@ weight_consensus_reproducibility <- weight_consensus[reproducibility]/sum(weight
 
 # Calculate weighted averages
 scores <- scores %>%
-  mutate(total_design = rowSums(across(all_of(design), ~ . * weight_consensus_design[[(cur_column())]]))) %>%
-  mutate(total_methods = rowSums(across(all_of(methods), ~ . * weight_consensus_methods[[(cur_column())]]))) %>%
-  mutate(total_reproducibility = rowSums(across(all_of(reproducibility), ~ . * weight_consensus_reproducibility[[(cur_column())]]))) %>%
-  mutate(total = rowSums(across(all_of(criteria), ~ . * weight_consensus[[(cur_column())]])))
+  mutate(total_design = rowSums(across(all_of(design), ~ . * weight_consensus_design[[(cur_column())]]))) %>% #creates a column for the total weighted sum scores classified as design previously
+  mutate(total_methods = rowSums(across(all_of(methods), ~ . * weight_consensus_methods[[(cur_column())]]))) %>% #creates a column for the total weighted sum scores classified as methods previously
+  mutate(total_reproducibility = rowSums(across(all_of(reproducibility), ~ . * weight_consensus_reproducibility[[(cur_column())]]))) %>% #creates a column for the total weighted sum scores classified as reproducibility previously
+  mutate(total = rowSums(across(all_of(criteria), ~ . * weight_consensus[[(cur_column())]]))) #creates a column for the total weighted sum scores
 ```
 
 ## Overall visual statistics
@@ -114,6 +114,7 @@ scores %>%
 ```
 
 ### Statistical model (Table S2)
+Perform a Kruskal-Wallis test to check if there are differences between the total scores obtained and the continents. Also, as an extra step, check if there are any specific pairs of continents that differ significantly from each other, running the Dunn test. Render both analysis into tables to better inspect them.
 
 ```{r total_performance_continent_model, echo=TRUE}
 
@@ -167,6 +168,7 @@ scores_taxa %>%
 
 
 ### Statistical model (Table S2)
+Perform a Kruskal-Wallis test to check if there are differences between the total scores obtained and the animal taxas. Also, as an extra step, check if there are any specific pairs of taxas that differ significantly from each other, running the Dunn test. Render both analysis into tables to better inspect them.
 
 ```{r total_performance_taxa_model, echo=TRUE}
 
@@ -260,7 +262,6 @@ kable(total_performance_year_model_table)
 ```
 
 ### Visualisation (Fig. 2b)
-Linear regression between the performance score and the publication year.
 
 ```{r total_performance_year_plot, echo=TRUE}
 scores %>%
@@ -326,6 +327,7 @@ scores %>%
 ```
 
 ### Visualisation (Fig. S3)
+Plot the three linear regressions of the domains against the overall performance of the studies.
 
 ```{r performance_domains_year_plot, echo=TRUE}
 # Experimental design
@@ -365,6 +367,7 @@ grid.arrange(grobs = list(total_design_year_plot,total_methods_year_plot,total_r
 # Performance scores vs. conclusiveness level
 
 ### Conclusiveness scores distribution (Fig. 2d)
+Distribution of the papers depending on the conclusiveness level, that is, the interpretation of the results obtained from their results in regards of adaptation microbe-driven adaptation, split between studies that explicitly addressed the increased adaptability provided by microbiomes and those that did not.
 
 ```{r adaptation_means, echo=TRUE}
 scores %>%
@@ -401,5 +404,5 @@ scores %>%
   ylim(0,1) +
   geom_smooth(method=lm, colour="#7A564A", fill = "#C1DDE040") +
   theme_classic() +
-  labs(y = "Reproducibility", x = "Conclusiveness")
+  labs(y = "Performance score", x = "Conclusiveness")
 ```
