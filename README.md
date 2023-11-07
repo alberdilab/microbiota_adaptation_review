@@ -24,7 +24,8 @@ The resulting table containing the 1974 publications can be found in the data fo
 The 1974 studies were manually screened to analyse whether they met the following inclusion criteria:
 1. The study analyses the gut microbiota
 2. The study revolves around or touches upon environmental adaptations
-3. The study focused on wild vertebrates and iv) is based on empirical data.
+3. The study focused on wild vertebrates
+4. The study is based on empirical data
 
 This second filtering step yielded 109 studies, which were scrutinised in detail to assign performance scores.
 
@@ -32,7 +33,7 @@ This second filtering step yielded 109 studies, which were scrutinised in detail
 The performance of studies to address the microbial adaptive contribution hypothesis was assessed considering ten criteria clustered into three domains:
 - Experimental design
 - Methodological resolution
-- Reproducibility.
+- Reproducibility
 
 For each one of these 10 criteria, a quantitative value ranging 0-1 was assigned to each of the 109 studies. The values can be found in the file [data/scores.csv](data/scores.csv).
 
