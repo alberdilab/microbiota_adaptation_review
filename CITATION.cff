@@ -1,0 +1,15 @@
+cff-version: 1.2.0
+message: "If you use this data or results, please cite it as below."
+authors:
+- family-names: "Martin Bideguren"
+  given-names: "Garazi"
+- family-names: "Razgour"
+  given-names: "Orly"
+  orcid: "https://orcid.org/0000-0003-3186-0313
+- family-names: "Alberdi"
+  given-names: "Antton"
+  orcid: "https://orcid.org/0000-0002-2875-6446"
+title: "Quantitative synthesis of microbe-driven acclimation and adaptation in wild vertebrates"
+version: 1.0.1
+date-released: 2023-11-08
+url: "https://github.com/alberdilab/microbiota_adaptation_review"
