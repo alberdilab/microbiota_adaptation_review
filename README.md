@@ -11,8 +11,8 @@ We conducted a literature search for articles published between 2016 and 2023 in
 > (wild*) AND (animal*) AND (adapt*) AND (“gut microbiota” OR “gut microbiome” OR “intestinal microbiota” OR “intestinal microbiome” OR “GUT microbiota” OR “GUT microbiome”)
 
 The resulting tables can be found in the data folder:
-- **Scopus:** [Scopus_20230601.csv](data/Scopus_230601.csv)
-- **Web of Science:** [WOS_20230601.csv](data/WOS_230601.csv)
+- **Scopus:** [Scopus_20230601.csv](data/Scopus_20230601.csv)
+- **Web of Science:** [WOS_20230601.csv](data/WOS_20230601.csv)
 
 ## 2. Data preprocessing
 The search results were downloaded in tabular format, and subsequently merged and filtered to obtain the definitive list of 1974 publication that was used for downstream analyses. The code used for these preprocessing steps is available in **[1-data_preprocessing.Rmd](1-data_preprocessing.Rmd)**.
