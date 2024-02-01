@@ -455,7 +455,7 @@ total_performance_conclusiveness_model_table <-
 total_performance_conclusiveness_model_table %>% round(4) %>% kable()
 ```
 
-### Visualisation (Fig. 2e)
+### Visualisation (Fig. 3e)
 
 ```{r total_performance_conclusiveness_plot, echo=TRUE, warning=FALSE, comments="", message=FALSE}
 scores %>%
@@ -466,4 +466,260 @@ scores %>%
   geom_smooth(method=lm, colour="#7A564A", fill = "#C1DDE040") +
   theme_classic() +
   labs(y = "Performance score", x = "Conclusiveness")
+```
+
+## Visualisation (Fig. 2)
+
+```{r criterion_values, echo=TRUE, warning=FALSE, comments="", message=FALSE}
+c1 <- scores %>%
+	group_by(Experimental.approach) %>%
+	summarize(values = n()) %>%
+	rename(scores=1) %>%
+	right_join(tibble(scores = c(0, 0.25, 0.5, 0.75, 1)), by = "scores") %>%
+	replace_na(list(values = 0)) %>%
+	arrange(scores) %>%
+	mutate(criterion="Experimental approach", .before = 1)
+
+c2 <- scores %>%
+	group_by(Analysis.approach) %>%
+	summarize(values = n()) %>%
+	rename(scores=1) %>%
+	right_join(tibble(scores = c(0,0.5,1)), by = "scores") %>%
+	replace_na(list(values = 0)) %>%
+	arrange(scores) %>%
+	mutate(criterion="Analysis approach", .before = 1)
+
+c3 <- scores %>%
+	group_by(Adaptation.means) %>%
+	summarize(values = n()) %>%
+	rename(scores=1) %>%
+	right_join(tibble(scores = c(0,1)), by = "scores") %>%
+	replace_na(list(values = 0)) %>%
+	arrange(scores) %>%
+	mutate(criterion="Adaptation means", .before = 1)
+  
+c4 <- scores %>%
+	group_by(Sample.size) %>%
+	summarize(values = n()) %>%
+	rename(scores=1) %>%
+	right_join(tibble(scores = c(0,0.33,0.66,1)), by = "scores") %>%
+	replace_na(list(values = 0)) %>%
+	arrange(scores) %>%
+	mutate(criterion="Sample size", .before = 1)
+  
+c5 <- scores %>%
+	group_by(Fitness.measurement) %>%
+	summarize(values = n()) %>%
+	rename(scores=1) %>%
+	right_join(tibble(scores = c(0,0.5,1)), by = "scores") %>%
+	replace_na(list(values = 0)) %>%
+	arrange(scores) %>%
+	mutate(criterion="Fitness measurement", .before = 1)
+  
+c6 <- scores %>%
+	group_by(Association.to.host) %>%
+	summarize(values = n()) %>%
+	rename(scores=1) %>%
+	right_join(tibble(scores = c(0,0.5,1)), by = "scores") %>%
+	replace_na(list(values = 0)) %>%
+	arrange(scores) %>%
+	mutate(criterion="Association to host", .before = 1)
+
+c7 <- scores %>%
+	group_by(Functional.response) %>%
+	summarize(values = n()) %>%
+	rename(scores=1) %>%
+	right_join(tibble(scores = c(0,0.2,0.4,0.6,0.8,1)), by = "scores") %>%
+	replace_na(list(values = 0)) %>%
+	arrange(scores) %>%
+	mutate(criterion="Functional response", .before = 1)
+  
+c8 <- scores %>%
+	group_by(Molecular.technique) %>%
+	summarize(values = n()) %>%
+	rename(scores=1) %>%
+	right_join(tibble(scores = c(0,0.33,0.66,1)), by = "scores") %>%
+	replace_na(list(values = 0)) %>%
+	arrange(scores) %>%
+	mutate(criterion="Molecular technique", .before = 1)
+  
+c9 <- scores %>%
+	group_by(Compositional.variability.resolution) %>%
+	summarize(values = n()) %>%
+	rename(scores=1) %>%
+	right_join(tibble(scores = c(0,0.25,0.5,0.75,1)), by = "scores") %>%
+	replace_na(list(values = 0)) %>%
+	arrange(scores) %>%
+	mutate(criterion="Compositional variability resolution", .before = 1)
+  
+c10 <- scores %>%
+	group_by(Data.availability) %>%
+	summarize(values = n()) %>%
+	rename(scores=1) %>%
+	right_join(tibble(scores = c(0,0.25,0.5,0.75,1)), by = "scores") %>%
+	replace_na(list(values = 0)) %>%
+	arrange(scores) %>%
+	mutate(criterion="Data availability", .before = 1)
+```
+
+```{r criterion_stats, echo=TRUE, warning=FALSE, comments="", message=FALSE}
+scores %>%
+    select(DOI,Experimental.approach,Analysis.approach,Adaptation.means,Sample.size,Fitness.measurement,Association.to.host,Functional.response,Molecular.technique,Compositional.variability.resolution,Data.availability) %>%
+      pivot_longer(-DOI, names_to = "criterion", values_to = "value") %>% 
+    	group_by(criterion) %>%
+      summarise(mean = mean(value), sd = sd(value))
+```
+
+```{r criterion_barplot, echo=TRUE, warning=FALSE, comments="", message=FALSE}
+c1plot <- c1 %>%
+  mutate(scores=factor(scores)) %>%
+  ggplot(., aes(x=values,y=criterion, fill=scores, group=scores)) +
+       geom_bar(stat="identity", colour="white", linewidth=0.1) +
+       scale_fill_manual(values=c("#ec6262","#f2a134","#f7e379","#bbdb44","#7cdc5f")) +
+       scale_y_discrete(expand = c(0.3, 0.3)) +
+       theme_void()+
+       theme(plot.margin=unit(c(0,0,0,0), "cm"),
+             legend.position = "none",
+             panel.grid.minor.x = element_line( size=.1, color="grey" ),
+             axis.text.y = element_blank(),
+             axis.title.y = element_blank(),
+             axis.text.x = element_blank(),
+             axis.title.x = element_blank())
+
+c2plot <- c2 %>%
+  mutate(scores=factor(scores)) %>%
+  ggplot(., aes(x=values,y=criterion, fill=scores, group=scores)) +
+       geom_bar(stat="identity", colour="white", linewidth=0.1) +
+       scale_fill_manual(values=c("#ec6262","#f7e379","#7cdc5f")) +
+       scale_y_discrete(expand = c(0.3, 0.3)) +
+       theme_void()+
+       theme(plot.margin=unit(c(0,0,0,0), "cm"),
+             legend.position = "none",
+             panel.grid.minor.x = element_line( size=.1, color="grey" ),
+             axis.text.y = element_blank(),
+             axis.title.y = element_blank(),
+             axis.text.x = element_blank(),
+             axis.title.x = element_blank())
+
+c3plot <- c3 %>%
+  mutate(scores=factor(scores)) %>%
+  ggplot(., aes(x=values,y=criterion, fill=scores, group=scores)) +
+       geom_bar(stat="identity", colour="white", linewidth=0.1) +
+       scale_fill_manual(values=c("#ec6262","#7cdc5f")) +
+       scale_y_discrete(expand = c(0.3, 0.3)) +
+       theme_void()+
+       theme(plot.margin=unit(c(0,0,0,0), "cm"),
+             legend.position = "none",
+             panel.grid.minor.x = element_line( size=.1, color="grey" ),
+             axis.text.y = element_blank(),
+             axis.title.y = element_blank(),
+             axis.text.x = element_blank(),
+             axis.title.x = element_blank())
+
+c4plot <- c4 %>%
+  mutate(scores=factor(scores)) %>%
+  ggplot(., aes(x=values,y=criterion, fill=scores, group=scores)) +
+       geom_bar(stat="identity", colour="white", linewidth=0.1) +
+       scale_fill_manual(values=c("#ec6262","#f7e379","#bbdb44","#7cdc5f")) +
+       scale_y_discrete(expand = c(0.3, 0.3)) +
+       theme_void()+
+       theme(plot.margin=unit(c(0,0,0,0), "cm"),
+             legend.position = "none",
+             panel.grid.minor.x = element_line( size=.1, color="grey" ),
+             axis.text.y = element_blank(),
+             axis.title.y = element_blank(),
+             axis.text.x = element_blank(),
+             axis.title.x = element_blank())
+
+c5plot <- c5 %>%
+  mutate(scores=factor(scores)) %>%
+  ggplot(., aes(x=values,y=criterion, fill=scores, group=scores)) +
+       geom_bar(stat="identity", colour="white", linewidth=0.1) +
+       scale_fill_manual(values=c("#ec6262","#f7e379","#7cdc5f")) +
+       scale_y_discrete(expand = c(0.3, 0.3)) +
+       theme_void()+
+       theme(plot.margin=unit(c(0,0,0,0), "cm"),
+             legend.position = "none",
+             panel.grid.minor.x = element_line( size=.1, color="grey" ),
+             axis.text.y = element_blank(),
+             axis.title.y = element_blank(),
+             axis.text.x = element_blank(),
+             axis.title.x = element_blank())
+
+c6plot <- c6 %>%
+  mutate(scores=factor(scores)) %>%
+  ggplot(., aes(x=values,y=criterion, fill=scores, group=scores)) +
+       geom_bar(stat="identity", colour="white", linewidth=0.1) +
+       scale_fill_manual(values=c("#ec6262","#f7e379","#7cdc5f")) +
+       scale_y_discrete(expand = c(0.3, 0.3)) +
+       theme_void()+
+       theme(plot.margin=unit(c(0,0,0,0), "cm"),
+             legend.position = "none",
+             panel.grid.minor.x = element_line( size=.1, color="grey" ),
+             axis.text.y = element_blank(),
+             axis.title.y = element_blank(),
+             axis.text.x = element_blank(),
+             axis.title.x = element_blank())
+
+c7plot <- c7 %>%
+  mutate(scores=factor(scores)) %>%
+  ggplot(., aes(x=values,y=criterion, fill=scores, group=scores)) +
+       geom_bar(stat="identity", colour="white", linewidth=0.1) +
+       scale_fill_manual(values=c("#ec6262","#fd8561","#f2a134","#f7e379","#bbdb44","#7cdc5f")) +
+       scale_y_discrete(expand = c(0.3, 0.3)) +
+       theme_void()+
+       theme(plot.margin=unit(c(0,0,0,0), "cm"),
+             legend.position = "none",
+             panel.grid.minor.x = element_line( size=.1, color="grey" ),
+             axis.text.y = element_blank(),
+             axis.title.y = element_blank(),
+             axis.text.x = element_blank(),
+             axis.title.x = element_blank())
+
+c8plot <- c8 %>%
+  mutate(scores=factor(scores)) %>%
+  ggplot(., aes(x=values,y=criterion, fill=scores, group=scores)) +
+       geom_bar(stat="identity", colour="white", linewidth=0.1) +
+       scale_fill_manual(values=c("#ec6262","#f7e379","#bbdb44","#7cdc5f")) +
+       scale_y_discrete(expand = c(0.3, 0.3)) +
+       theme_void()+
+       theme(plot.margin=unit(c(0,0,0,0), "cm"),
+             legend.position = "none",
+             panel.grid.minor.x = element_line( size=.1, color="grey" ),
+             axis.text.y = element_blank(),
+             axis.title.y = element_blank(),
+             axis.text.x = element_blank(),
+             axis.title.x = element_blank())
+
+c9plot <- c9 %>%
+  mutate(scores=factor(scores)) %>%
+  ggplot(., aes(x=values,y=criterion, fill=scores, group=scores)) +
+       geom_bar(stat="identity", colour="white", linewidth=0.1) +
+       scale_fill_manual(values=c("#ec6262","#f2a134","#f7e379","#bbdb44","#7cdc5f")) +
+       scale_y_discrete(expand = c(0.3, 0.3)) +
+       theme_void()+
+       theme(plot.margin=unit(c(0,0,0,0), "cm"),
+             legend.position = "none",
+             panel.grid.minor.x = element_line( size=.1, color="grey" ),
+             axis.text.y = element_blank(),
+             axis.title.y = element_blank(),
+             axis.text.x = element_blank(),
+             axis.title.x = element_blank())
+
+c10plot <- c10 %>%
+  mutate(scores=factor(scores)) %>%
+  ggplot(., aes(x=values,y=criterion, fill=scores, group=scores)) +
+       geom_bar(stat="identity", colour="white", linewidth=0.1) +
+       scale_fill_manual(values=c("#ec6262","#f2a134","#f7e379","#bbdb44","#7cdc5f")) +
+       scale_y_discrete(expand = c(0.3, 0.3)) +
+       theme_void()+
+       theme(plot.margin=unit(c(0,0,0,0), "cm"),
+             legend.position = "none",
+             panel.grid.minor.x = element_line( size=.1, color="grey" ),
+             axis.text.y = element_blank(),
+             axis.title.y = element_blank(),
+             axis.text.x = element_blank(),
+             axis.title.x = element_blank())
+
+grid.arrange(c1plot, c2plot, c3plot, c4plot,  c5plot, c6plot, c7plot, c8plot, c9plot, c10plot, ncol = 1)
 ```
