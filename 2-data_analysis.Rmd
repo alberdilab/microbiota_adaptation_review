@@ -27,7 +27,13 @@ library(vegan)
 library(FSA)
 ```
 
-Prepare the main dataset were all the analysed studies will have their obtained scores for each of the criteria. Subsample the dataset in 4 dataframes: 1)Select the columns corresponding to the 10 analysed criteria, 2)Select the columns corresponding to the experimental design, 3)Select the columns corresponding to the methodological resolution and 4) Select the columns corresponding to the reproducibility.
+Prepare the main dataset were all the analysed studies will have their obtained scores for each of the criteria. Subsample the dataset in 4 dataframes: 
+
+1. Select the columns corresponding to the 10 analysed criteria.
+2. Select the columns corresponding to the experimental design.
+3. Select the columns corresponding to the methodological resolution.
+4. Select the columns corresponding to the reproducibility.
+
 Finally, prepare the file with the weigthed values for each of the analysed criteria.
 
 ```{r load_data}
@@ -77,6 +83,11 @@ scores <- scores %>%
   #Overall total score
   mutate(total = rowSums(across(all_of(criteria),
         ~ . * weight_consensus[[(cur_column())]])))
+```
+
+```{r overall_stats}
+mean(scores$total)
+sd(scores$total)
 ```
 
 ## Overall visual statistics
